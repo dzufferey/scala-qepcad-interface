@@ -34,11 +34,11 @@ object ArithmeticSimplification {
       Divides(Minus(p1, p2), p3)
     case Application(DRealDecl.timeDerivative, List(Application(DRealDecl.sin, args))) =>
       assert(args.length == 1)
-      val dArgs = pushDerivativesDown(dt, dynamic, DRealDecl.timeDerivative(args(0)))
+      val dArgs = pushDerivativesDown(dt, dynamic, DRealDecl.timeDerivative(args.head))
       Times(DRealDecl.cos(args:_*), dArgs)
     case Application(DRealDecl.timeDerivative, List(Application(DRealDecl.cos, args))) =>
       assert(args.length == 1)
-      val dArgs = pushDerivativesDown(dt, dynamic, DRealDecl.timeDerivative(args(0)))
+      val dArgs = pushDerivativesDown(dt, dynamic, DRealDecl.timeDerivative(args.head))
       Times(Literal(-1.0), DRealDecl.sin(args:_*), dArgs)
     case Application(DRealDecl.timeDerivative, List(Application(DRealDecl.pow, List(expr, Literal(n: Double))))) =>
       if (n == 0.0) Literal(0.0)
@@ -63,7 +63,12 @@ object ArithmeticSimplification {
 
     //TODO should we generalize exponents to rational instead of long ?
 
-    protected case class Monomial(coeff: Ratio, exponents: IndexedSeq[Long]) {
+    protected case class Monomial(coeff: Ratio, exponents: IndexedSeq[Long]) extends Ordered[Monomial] {
+
+      def compare(that: Monomial) = {
+        val deltaExp = this.exponents.zip(that.exponents).map{ case (a,b) => (a - b).toInt }.find( _ != 0 )
+        deltaExp.getOrElse( this.coeff.compare(that.coeff) )
+      }
 
       def *(v: Variable) = {
         val i = idx(v)
@@ -163,7 +168,7 @@ object ArithmeticSimplification {
       def toFormula: Formula = {
         if (ms.isEmpty) Literal(0l)
         else {
-          val mf = ms.map(_.toFormula)
+          val mf = ms.sorted.map(_.toFormula)
           if (mf.size == 1) mf.head
           else Plus(mf:_*)
         }
@@ -190,6 +195,7 @@ object ArithmeticSimplification {
       case Application(DRealDecl.pow, List(e, Literal(l))) =>
         val p = mkPolynomial(e)
         var c = l match {
+          case i: Int => i.toLong
           case l: Long => l
           case d: Double if d.isWhole => d.toLong
           case other => sys.error("mkPolynomial, not supported: exponent = " + other)
@@ -227,6 +233,7 @@ object ArithmeticSimplification {
       case Not(ap) => Not(processEq(f))
       case And(lst @ _*) => And(lst.map(processEq):_*)
       case Or(lst @ _*) => Or(lst.map(processEq):_*)
+      case Implies(a, b) => Implies(processEq(a), processEq(b))
       case other => mkPolynomial(other).toFormula
     }
 
@@ -291,7 +298,7 @@ object ArithmeticSimplification {
       case Application((Eq | Leq | Lt | Geq | Gt), List(_, _)) => true
       case Variable(_) | Plus(_*) | Minus(_*) | Times(_*) => true
       case Application(DRealDecl.pow, List(f, i)) => check(f) && !isInteger(f) && isInteger(i)
-      case And(_*) | Or(_*) | Not(_) => true
+      case And(_*) | Or(_*) | Not(_) | Implies(_, _) => true
       case other => isInteger(other)
     }
     check(f)

@@ -5,6 +5,7 @@ import dzufferey.smtlib._
 import dzufferey.smtlib.InlineOps._
 import dzufferey.utils._
 import dzufferey.utils.LogLevel._
+import Common._
 
 class QepcadTest extends FunSuite {
 
@@ -18,16 +19,6 @@ class QepcadTest extends FunSuite {
   // example from https://www.usna.edu/CS/qepcadweb/B/user/UsingQEPCAD.html
   test("X Axis Ellipse") {
     if (Qepcad.isPresent) {
-      val a = mkVar("a")
-      val b = mkVar("b")
-      val c = mkVar("c")
-      val x = mkVar("x")
-      val y = mkVar("y")
-      val a2 = pow(a, 2)
-      val b2 = pow(b, 2)
-      val c2 = pow(c, 2)
-      val x2 = pow(x, 2)
-      val y2 = pow(y, 2)
       val fv = List(a, b, c)
       val elim = List(x, y)
       val inner0 =  And(
