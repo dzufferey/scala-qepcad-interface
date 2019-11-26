@@ -44,7 +44,7 @@ object ArithmeticSimplification {
       if (n == 0.0) Literal(0.0)
       else Times(Literal(n), DRealDecl.pow(expr, Literal(n-1)), pushDerivativesDown(dt, dynamic, DRealDecl.timeDerivative(expr)))
     case Application(DRealDecl.timeDerivative, List(Application(DRealDecl.pow, List(expr, Literal(n: Long))))) =>
-      if (n == 0l) Literal(0)
+      if (n == 0L) Literal(0)
       else Times(Literal(n), DRealDecl.pow(expr, Literal(n-1)), pushDerivativesDown(dt, dynamic, DRealDecl.timeDerivative(expr)))
     case a @ Application(fct, args) => fct(args.map(pushDerivativesDown(dt, dynamic, _)):_*).setType(a.tpe)
     case b @ Binding(bt, vs, f) => Binding(bt, vs, pushDerivativesDown(dt, dynamic, f)).setType(b.tpe)
@@ -81,8 +81,8 @@ object ArithmeticSimplification {
       }
 
       def *(c: Long) = {
-        if (c == 0l) {
-          Monomial(Ratio.zero, exponents.map( _ => 0l ))
+        if (c == 0L) {
+          Monomial(Ratio.zero, exponents.map( _ => 0L ))
         } else {
           Monomial(coeff * c, exponents)
         }
@@ -90,7 +90,7 @@ object ArithmeticSimplification {
       
       def *(m: Monomial) = {
         if (coeff == Ratio.zero || m.coeff == Ratio.zero) {
-          Monomial(Ratio.zero, exponents.map( _ => 0l ))
+          Monomial(Ratio.zero, exponents.map( _ => 0L ))
         } else {
           Monomial( coeff * m.coeff,
                     for (i <- exponents.indices) yield exponents(i) + m.exponents(i) )
@@ -109,12 +109,12 @@ object ArithmeticSimplification {
       def toFormula: Formula = {
         val c = if (coeff.isWhole) Literal(coeff.toLong)
                 else Divides(Literal(coeff.num), Literal(coeff.denom))
-        if (coeff == Ratio.zero || exponents.forall( _ == 0l )) {
+        if (coeff == Ratio.zero || exponents.forall( _ == 0L )) {
           c
         } else {
           val prod = exponents.zipWithIndex.flatMap{ case (e, i) =>
-              if (e == 0l) None
-              else if (e == 1l) Some(i2v(i))
+              if (e == 0L) None
+              else if (e == 1L) Some(i2v(i))
               else Some(DRealDecl.pow(i2v(i), FloatLit(e)))
             }
           val elts = if (coeff == Ratio.one && !prod.isEmpty) prod
@@ -166,7 +166,7 @@ object ArithmeticSimplification {
       }
 
       def toFormula: Formula = {
-        if (ms.isEmpty) Literal(0l)
+        if (ms.isEmpty) Literal(0L)
         else {
           val mf = ms.sorted.map(_.toFormula)
           if (mf.size == 1) mf.head
@@ -176,12 +176,12 @@ object ArithmeticSimplification {
 
     }
 
-    protected val zero = Monomial(Ratio.zero, vars.map( _ => 0l).toIndexedSeq)
-    protected val one = Monomial(Ratio.one, vars.map( _ => 0l).toIndexedSeq)
-    protected val minusOne = Monomial(Ratio.mone, vars.map( _ => 0l).toIndexedSeq)
+    protected val zero = Monomial(Ratio.zero, vars.map( _ => 0L).toIndexedSeq)
+    protected val one = Monomial(Ratio.one, vars.map( _ => 0L).toIndexedSeq)
+    protected val minusOne = Monomial(Ratio.mone, vars.map( _ => 0L).toIndexedSeq)
 
     protected def constant(l: Long): Polynomial = {
-      Polynomial(Seq(Monomial(new Ratio(l,1l), zero.exponents)))
+      Polynomial(Seq(Monomial(new Ratio(l,1L), zero.exponents)))
     }
     
     protected def ratio(n: Long, d: Long): Polynomial = {
@@ -202,7 +202,7 @@ object ArithmeticSimplification {
         }
         assert(c >= 0, "TODO negative exponent not yet implemented")
         var acc = Polynomial(Seq(one))
-        while(c > 0l) {
+        while(c > 0L) {
           c-= 1
           acc *= p
         }
@@ -225,7 +225,7 @@ object ArithmeticSimplification {
         val lhs = pa + (pb * minusOne)
         Logger("ArithmeticSimplification", Debug, "lhs: " + lhs)
         Logger("ArithmeticSimplification", Debug, "lhs: " + lhs.toFormula)
-        val result = fct(lhs.toFormula, Literal(0l))
+        val result = fct(lhs.toFormula, Literal(0L))
         Logger("ArithmeticSimplification", Info, "original: " + f)
         Logger("ArithmeticSimplification", Info, "result:   " + result)
         result
@@ -305,21 +305,21 @@ object ArithmeticSimplification {
   }
 
   def isZero(l: Formula) = l match {
-    case LongIntLit(0l) => true
+    case LongIntLit(0L) => true
     case _ => false
   }
 
   def simplifyCst(f: Formula) = {
     FormulaUtils.map({
-      case Application(DRealDecl.pow, List(LongIntLit(0l), LongIntLit(0l))) => sys.error("undefined: 0^0")
-      case Application(DRealDecl.pow, List(LongIntLit(0l), LongIntLit(e))) => LongIntLit(0l)
-      case Application(DRealDecl.pow, List(LongIntLit(l), LongIntLit(0l))) => LongIntLit(1l)
+      case Application(DRealDecl.pow, List(LongIntLit(0L), LongIntLit(0L))) => sys.error("undefined: 0^0")
+      case Application(DRealDecl.pow, List(LongIntLit(0L), LongIntLit(e))) => LongIntLit(0L)
+      case Application(DRealDecl.pow, List(LongIntLit(l), LongIntLit(0L))) => LongIntLit(1L)
       case Application(DRealDecl.pow, List(LongIntLit(l), LongIntLit(e))) if e > 0 => Literal(math.pow(l, e).toLong) //TODO check overflow
       case Application(DRealDecl.pow, List(Literal(l: Double), Literal(e: Double))) => Literal(math.pow(l, e))
-      case Application(DRealDecl.cos, List(LongIntLit(0l))) => LongIntLit(1l)
-      case Application(DRealDecl.sin, List(LongIntLit(0l))) => LongIntLit(0l)
-      case Divides(l1, l2) if isZero(l1) && !isZero(l2)  => LongIntLit(0l)
-      case Times(lst @ _*) if lst.exists(isZero) => LongIntLit(0l)
+      case Application(DRealDecl.cos, List(LongIntLit(0L))) => LongIntLit(1L)
+      case Application(DRealDecl.sin, List(LongIntLit(0L))) => LongIntLit(0L)
+      case Divides(l1, l2) if isZero(l1) && !isZero(l2)  => LongIntLit(0L)
+      case Times(lst @ _*) if lst.exists(isZero) => LongIntLit(0L)
       case other => other
     }, f)
   }

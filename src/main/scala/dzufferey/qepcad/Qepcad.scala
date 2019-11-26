@@ -12,7 +12,7 @@ object Qepcad {
     try SysCmd(Array(command, "-h"))._1 == 0 
     catch { case _: Throwable => false }
 
-  val defaultMemory = 100000000l
+  val defaultMemory = 100000000L
   val defaultPrime = 2000
   val defaultTimeout = 120 * 1000 // 2 min
   
@@ -48,7 +48,7 @@ object Qepcad {
 
   def isSupported(f: Formula): Boolean = {
     try {
-      Printer.printFormula(f)(Info)
+      dzufferey.qepcad.Printer.printFormula(f)(Info)
       true
     } catch { case _: Throwable =>
       false

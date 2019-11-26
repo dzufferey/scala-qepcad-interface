@@ -12,13 +12,13 @@ object Parser extends StandardTokenParsers {
   import scala.util.parsing.combinator.token._
   import scala.util.parsing.combinator.syntactical._
 
-  lexical.delimiters += (
+  lexical.delimiters ++= List(
     "(", ")", "[", "]", "/\\", "\\/",
     "=", "/=", "<", ">", ">=", "<=",
     "+", "-", "*", "/", "^"
   )
 
-  lexical.reserved += (
+  lexical.reserved ++= List(
     "TRUE", "FALSE"
   )
 

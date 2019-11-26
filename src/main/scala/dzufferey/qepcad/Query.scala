@@ -21,10 +21,10 @@ case class Query(freeVariables: List[Variable],
 
   def variables = allVars.mkString("(", ", ", ")")
   def nbrFV = freeVariables.length
-  def printFormula = Printer.printFormula(formula2) + "."
-  def printAssume = assumption2.map(a => "assume " + Printer.printFormula(a) )
+  def printFormula = dzufferey.qepcad.Printer.printFormula(formula2) + "."
+  def printAssume = assumption2.map(a => "assume " + dzufferey.qepcad.Printer.printFormula(a) )
 
-  def print {
+  def print: Unit = {
     println("variables:")
     println(variables)
     println("free variables:")
@@ -55,7 +55,7 @@ case class Query(freeVariables: List[Variable],
       
       val to = System.currentTimeMillis + timeout
       
-      def readUntil(txt: String) {
+      def readUntil(txt: String): Unit = {
         while (!input.ready && System.currentTimeMillis <= to) {
           Thread.sleep(10)
         }
@@ -69,7 +69,7 @@ case class Query(freeVariables: List[Variable],
         }
       }
      
-      def write(txt: String) {
+      def write(txt: String): Unit = {
         Logger("Qepcad -> ", Info, txt)
         output.write(txt)
         output.newLine()
@@ -111,7 +111,7 @@ case class Query(freeVariables: List[Variable],
      
       solver.waitFor
      
-      val formula = Parser(line)
+      val formula = dzufferey.qepcad.Parser(line)
 
       //dumpQuery(Some(formula))
 
@@ -131,7 +131,7 @@ case class Query(freeVariables: List[Variable],
         "variables to eliminate:\n  " + toEliminate.map(renaming).mkString(", ") + "\n" +
         "formula:\n  " + printFormula + "\n" +
         printAssume.mkString("assumption:\n  ", "\n  ", "\n") +
-        "result:\n  " + result.map(Printer.printFormula).getOrElse("???") + "\n"
+        "result:\n  " + result.map(dzufferey.qepcad.Printer.printFormula).getOrElse("???") + "\n"
       IO.writeInFile(fname, query)
     }
   }

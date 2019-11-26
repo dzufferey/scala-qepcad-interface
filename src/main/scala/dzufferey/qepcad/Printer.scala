@@ -13,8 +13,8 @@ object Printer {
       case other => List(other)
     }
     val (lst2, sign) = Misc.mapFold(elts.toList, true, (e: Formula, acc: Boolean) =>  e match {
-      case Divides(Literal(l: Long), l2 @ Literal(_)) if l < 0l => (Divides(Literal(-l),l2), !acc)
-      case Literal(l: Long) if l < 0l => (Literal(-l), !acc)
+      case Divides(Literal(l: Long), l2 @ Literal(_)) if l < 0L => (Divides(Literal(-l),l2), !acc)
+      case Literal(l: Long) if l < 0L => (Literal(-l), !acc)
       case Literal(d: Double) if d < 0.0 => (Literal(-d), !acc)
       case other => (other, acc)
     })
